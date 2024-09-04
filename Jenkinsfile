@@ -5,9 +5,9 @@ pipeline {
         // You must set the following environment variables
         SCANNER_HOME = tool 'sonar-scanner'
         AWS_ACCOUNT_ID = credentials('ACCOUNT_ID')
-        AWS_ECR_REPO_NAME = credentials('ECR_REPO_API_GATEWAY')
+        AWS_ECR_REPO_NAME = credentials('ECR_api_gateway')
         AWS_DEFAULT_REGION = 'us-east-1'
-        ORGANIZATION_NAME = "fleetman-k8s-ci"
+        ORGANIZATION_NAME = "Sohil-Doshi"
         SERVICE_NAME = "fleetman-api-gateway"
             
         REPOSITORY_TAG = "${ORGANIZATION_NAME}-${SERVICE_NAME}:${BUILD_ID}"
@@ -43,13 +43,13 @@ pipeline {
             }
         }
 
-        stage('Quality Check') {
-            steps {
-                script {
-                    waitForQualityGate abortPipeline: false, credentialsId: 'sonar-token' 
-                }
-            }
-        }
+        // stage('Quality Check') {
+        //     steps {
+        //         script {
+        //             waitForQualityGate abortPipeline: false, credentialsId: 'sonar-token' 
+        //         }
+        //     }
+        // }
 	    
         stage('Trivy File Scan') {
             steps {
@@ -92,13 +92,13 @@ pipeline {
         stage('Update Deployment file') {
             environment {
                 GIT_REPO_NAME = "fleetman-api-gateway"
-                GIT_ORG_NAME = "fleetman-k8s-ci"
+                GIT_ORG_NAME = "Sohil-Doshi"
             }
             steps {
                 withCredentials([string(credentialsId: 'github', variable: 'GITHUB_TOKEN')]) {
                     sh '''
-                        git config user.email "deepaktyagi048@gmail.com"
-                        git config user.name "deeepak-tyagii"
+                        git config user.email "sohildoshi344@gmail.com"
+                        git config user.name "sohil344"
                         BUILD_NUMBER=${BUILD_NUMBER}
                         echo $BUILD_NUMBER
                         imageTag=$(grep -oP '(?<=fleetman-api-gateway:)[^ ]+' deploy.yaml)
@@ -106,7 +106,7 @@ pipeline {
                         sed -i "s/${AWS_ECR_REPO_NAME}:${imageTag}/${AWS_ECR_REPO_NAME}:${BUILD_NUMBER}/" deploy.yaml
                         git add deploy.yaml
                         git commit -m "Update deployment Image to version \${BUILD_NUMBER}"
-                        git push https://${GITHUB_TOKEN}@github.com/${GIT_ORG_NAME}/${GIT_REPO_NAME} HEAD:master
+                        git push https://${GITHUB_TOKEN}@github.com/${GIT_ORG_NAME}/${GIT_REPO_NAME} HEAD:master --push
                     '''
                 }
             }
